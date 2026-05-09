@@ -30,6 +30,7 @@ O repositório está organizado por plataforma e nome da máquina/desafio:
 ```text
 .
 ├── TryHackMe/
-│   ├── Archangel/           # LFI to RCE via Log Poisoning & Path Hijacking
+│   ├── Archangel/
+|       └── Archangel.md        # LFI to RCE via Log Poisoning & Path Hijacking
 ├── HackTheBox/              # (Próximos passos)
 │   └── [Nome-da-Máquina]/
