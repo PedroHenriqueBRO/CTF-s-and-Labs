@@ -12,14 +12,14 @@ Atualmente, dedico **4 horas diárias** ao estudo prático e teórico, focando n
 
 ### 🛡️ TryHackMe
 Minha porta de entrada, onde estou consolidando as bases de:
-*   **Junior Cybersecurity Analyst**: Foco em análise de rede, logs e defesa inicial.
-*   **Web Pentesting**: Exploração de vulnerabilidades como LFI, RCE, SQLi e IDOR.
-*   **Privilege Escalation**: Técnicas avançadas em Linux (SUID, Cronjobs, Path Hijacking).
+* **Junior Cybersecurity Analyst**: Foco em análise de rede, logs e defesa inicial.
+* **Web Pentesting**: Exploração de vulnerabilidades como LFI, RCE, SQLi e IDOR.
+* **Privilege Escalation**: Técnicas avançadas em Linux como SUID, Cronjobs e Path Hijacking.
 
 ### 🎯 HackTheBox (Em breve)
-O próximo nível da jornada. Pretendo aplicar os conceitos aprendidos no THB em ambientes mais complexos e menos guiados, focando nas trilhas de:
-*   **CPTS (Certified Penetration Testing Specialist)**.
-*   **SOC Analyst Tier 1 & 2**.
+O próximo nível da jornada. Pretendo aplicar os conceitos aprendidos no THB em ambientes mais complexos, focando nas trilhas de:
+* **CPTS (Certified Penetration Testing Specialist)**.
+* **SOC Analyst Tier 1 & 2**.
 
 ---
 
@@ -31,6 +31,10 @@ O repositório está organizado por plataforma e nome da máquina/desafio:
 .
 ├── TryHackMe/
 │   ├── Archangel/
-|       └── Archangel.md        # LFI to RCE via Log Poisoning & Path Hijacking
-├── HackTheBox/              # (Próximos passos)
+│   │   └── Archangel.md       # LFI to RCE via Log Poisoning & Path Hijacking
+│   └── Opacity/
+│       └── Opacity.md         # File Upload Bypass, KeePass Cracking & John the Ripper
+├── HackTheBox/                # (Próximos passos)
 │   └── [Nome-da-Máquina]/
+│       └── [Writeup].md
+└── scripts/                   # Payloads e automações (C++, Python)
