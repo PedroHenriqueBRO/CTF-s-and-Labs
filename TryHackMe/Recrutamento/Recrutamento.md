@@ -10,7 +10,9 @@
 
 ## Ferramentas e scripts utilizados
 - nmap
-- gobuster
+- gobuster dir
+- gobuster dns
+- gobuster vhost
 
 ## Resultados obtidos
 Primeiro iremos mapear as portas que estão rodando no alvo e depois também com -sV e -sC.
@@ -289,6 +291,6 @@ Nisso conseguimos a outra flag THM{LOGGED_IN_ADM1N1} .
 
 ## Considerações
 - file:// é o wrapper padrão para acessar arquivos pelo php para acessar o sistema de arquivos locais, tive de pesquisar pois caminhos normais no file.php ele não aceitava , fiquei preso demais nessa parte , então vi que esse wrapper podia permitir se não tivesse sendo sanitizado de eu fazer isso para arquivos locais. Se a aplicação for php e tiver rotas de leitura de arquivos então devemos testar file:// ou rotas normais mesmo.
-- uma sql injection podemos usar " ,' , -- , # , depende da sintaxe do banco , nesse sql injection tive de usar ' e # , diferente do normal que uso ' e -- , devemos fazer todas as tentativas possíveis.
+- uma sql injection podemos usar " ,' , -- , # , depende da sintaxe do banco , nesse sql injection tive de usar ' e # , diferente do normal que uso ' e -- , devemos fazer todas as tentativas possíveis, nesse caso eu usei -- sem colocar espaço no final e deu erro , usei # e não deu erro sem espaço , depois que fui analisar que quando usar -- deve se colocar espaço no final.
 
 
