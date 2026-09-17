@@ -663,7 +663,7 @@ Irei ver se consigo complementar o resultado do j.smith com o t.jones e achar ma
 ### Bloodhound (r.williams)
 Essa fase será a fase que como r.williams eu irei executar o vetor de ataque via AddAllowedToAct para conseguir ser administrator.
 
-Iremos usar um ataque que chama rbcd , na qual a gente tem permissao de AddAllowedToAct no host que é o DC01.CTF.LOCAL e com isso iremos adicionar uma conta de computador a esse host , pois nosso usuário tem permissão de editar uma lista de controle que diz quais contas/computadores podem solicitar bilhetes TGS em meu nome para fingir ser qualquer outro usuário? basicamente o DC01 que pode solicitar TGS mas aí no caso iremos editar essa lista e iremos criar uma conta de computador que iremos inserir ela na lista e com ela iremos pedir tgs e impersonar como admin já que ele tem a opção Marked Sensitive como false , assim podemos impersonar como admin.
+Iremos usar um ataque que chama rbcd , na qual a gente tem permissao de AddAllowedToAct no host que é o DC01.CTF.LOCAL e com isso iremos adicionar uma conta de computador a esse host , pois nosso usuário tem permissão de editar uma lista de controle que diz quais contas/computadores podem solicitar bilhetes TGS em meu nome para fingir ser qualquer outro usuário? basicamente o DC01 que pode solicitar TGS mas aí no caso iremos editar essa lista e iremos criar uma conta de computador que iremos inserir ela na lista e com ela iremos pedir tgs e impersonar como admin já que ele não é tratado como user protegido e pode ser delegado.
 
 Primeiro passo criamos a conta de computador
 ```
@@ -695,7 +695,7 @@ Impacket v0.14.0.dev0 - Copyright Fortra, LLC and its affiliated companies
 [*] Requesting S4U2Proxy
 [*] Saving ticket in Administrator@cifs_DC01.ctf.local@CTF.LOCAL.ccache
 ```
-Aqui fizemos esse processo e guardamos o TGT no arquivo .cache , iremos agora exportar.
+Aqui fizemos esse processo e guardamos o TGS no arquivo .cache , iremos agora exportar.
 ```
 export KRB5CCNAME=Administrator@cifs_DC01.ctf.local@CTF.LOCAL.ccache
 ```
@@ -1219,7 +1219,7 @@ User claims unknown.
 >[!failure] Vulnerabilidade Detectada: 
 > **Parâmetro Vulnerável:** Marked Sensitive em admin como false , além da permissão para r.williams editar o DACL de contas de usuários/computadores que podem se passar pelo DC01 para solicitar tickets de serviço
 > **Tipo:** Ataque RBCD
-> **Mecanismo:** Uso de scripts impacket para adicionar computador , delegar autroridade para o computador criado para se passar pelo DC01 para pedir tickets e solicitar ticket de serviço se impersonando como admin utilizando a conta de computador criada e assim guardando o TGT localmente em arquivo .cache para utilização.
+> **Mecanismo:** Uso de scripts impacket para adicionar computador , delegar autroridade para o computador criado para se passar pelo DC01 para pedir tickets e solicitar ticket de serviço se impersonando como admin utilizando a conta de computador criada e assim guardando o TGS localmente em arquivo .cache para utilização.
 
 > [!success] Credenciais Obtidas
 > - **Usuários:** t.jones e r.williams
@@ -1252,8 +1252,8 @@ User claims unknown.
 ---
 ## Remediações 
 - Utilizar senhas mais fortes e não reutilizar senhas para várias contas
-- Admin não deve ser uma conta que possa ser marcada como "Marked Sensitive false", pois impersonar como admin pode trazer vários problemas.
-- O r.williams poderia realmente ter de possuir essa capacidade de AddAllowedToAct mas o fato todo de ter senha reutilizada de outras contas que havia vetores de ataque para elas tornou essa permissão um achado para um invasor. Esse tipo de permissão é muito forte pois permitir que outras contas de computador possam solicitar tickets de serviços ao invés do DC é muito privilégio.
+- Admin deve ser uma conta marcada como sensível e que não pode ser delegada.
+- A permissão de r.williams poder criar contas de computador junto dele pode adicionar contas para se passarem pelo DC01 acabaram permitindo o RBCD junto do admin não sendo tratado como sensível e pode ser delegado , assim a permissão de poder criar contas deveria ser revogada e o admin ser tratado como sensível e não pode ser delegado.
 ---
 ## 📚 Considerações Técnicas & Cheat Sheet
 
