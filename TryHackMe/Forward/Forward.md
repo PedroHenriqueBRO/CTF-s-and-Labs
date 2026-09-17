@@ -1140,7 +1140,7 @@ User claims unknown.
 > **Mecanismo:** Pulverização da senha de t.jones em todos os usuários , assim descobrindo a senha de svc.scanner e r.williams
 
 >[!failure] Vulnerabilidade Detectada: 
-> **Parâmetro Vulnerável:** Marked Sensitive em admin como false , além da permissão para r.williams editar o DACL de contas de usuários/computadores que podem se passar pelo DC01 para solicitar tickets de serviço
+> **Parâmetro Vulnerável:** Conta admin permitindo delegação e fora de users protected , além da permissão para r.williams editar o DACL de contas de usuários/computadores que podem se passar pelo DC01 para solicitar tickets de serviço
 > **Tipo:** Ataque RBCD
 > **Mecanismo:** Uso de scripts impacket para adicionar computador , delegar autroridade para o computador criado para se passar pelo DC01 para pedir tickets e solicitar ticket de serviço se impersonando como admin utilizando a conta de computador criada e assim guardando o TGS localmente em arquivo .cache para utilização.
 
