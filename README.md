@@ -4,11 +4,11 @@
 [![Hack The Box](https://img.shields.io/badge/HackTheBox-Certified%20Junior%20Cybersecurity%20Analyst-brightgreen?style=flat-square&logo=hackthebox)](https://academy.hackthebox.com/)
 [![TryHackMe](https://img.shields.io/badge/TryHackMe-Pathways%20Completed-red?style=flat-square&logo=tryhackme)](https://tryhackme.com/)
 [![Study Time](https://img.shields.io/badge/Dedication-4h%2Fday-blueviolet?style=flat-square)]()
-[![Writeups](https://img.shields.io/badge/Writeups-25-orange?style=flat-square)]()
+[![Writeups](https://img.shields.io/badge/Writeups-27-orange?style=flat-square)]()
 
 Repositório de documentação prática da transição de **Software Developer** para **Cybersecurity / Offensive Security (Red Team)**.
 
-Cada pasta é um CTF ou lab resolvido e documentado — da enumeração à pós-exploração — com anotações, comandos e lições aprendidas. A ordem numerada abaixo (#1 → #25) reflete a sequência cronológica dos commits: serve para acompanhar a **evolução da documentação** e da **metodologia de pentest**, não só o conteúdo técnico.
+Cada pasta é um CTF ou lab resolvido e documentado — da enumeração à pós-exploração — com anotações, comandos e lições aprendidas. A ordem numerada abaixo (#1 → #27) reflete a sequência cronológica dos commits: serve para acompanhar a **evolução da documentação** e da **metodologia de pentest**, não só o conteúdo técnico.
 
 ---
 
@@ -57,7 +57,7 @@ Cada pasta é um CTF ou lab resolvido e documentado — da enumeração à pós-
 
 ## 📈 Evolução da jornada (ordem cronológica)
 
-Cada entrada é um writeup commitado. O número **#N / 25** é a posição na linha do tempo — útil para comparar como a escrita e o raciocínio de pentest mudaram do primeiro CTF ao mais recente.
+Cada entrada é um writeup commitado. O número **#N / 27** é a posição na linha do tempo — útil para comparar como a escrita e o raciocínio de pentest mudaram do primeiro CTF ao mais recente.
 
 | Fase | Writeups | Foco |
 |------|----------|------|
@@ -66,6 +66,7 @@ Cada entrada é um writeup commitado. O número **#N / 25** é a posição na li
 | Footprinting integrado | #16–#18 | Encadear vários serviços até a flag |
 | Exploração & MSF | #19–#21 | WordPress + Metasploit (Linux/Windows) |
 | Web + Privesc documentados | #22–#25 | SQLi, LFD/API, relatório mais estruturado |
+| Active Directory | #26–#27 | Coerção NTLM, delegação Kerberos e RBCD |
 
 ---
 
@@ -105,8 +106,10 @@ A organização separa a plataforma (**HackTheBox** vs **TryHackMe**) e, no THM,
     │   └── 22-SQLInjectionLab.md          # SQLi manual (4 vetores)
     ├── Recrutamento/23-Recrutamento.md    # file:// + SQLi → admin
     ├── Support/24-Support.md              # LFD / sessão / relatório estruturado
-    └── jump/25-Jump.md                    # privesc multi-usuário encadeado
+    ├── jump/25-Jump.md                    # privesc multi-usuário encadeado
+    ├── Proxy/26-Proxy.md                  # AD / coerção NTLM / constrained delegation
+    └── Forward/27-Forward.md              # lateral / KeePass / RBCD
 ```
 
 **Por que essa estrutura?**  
-Plataforma → contexto (lab de módulo vs sala completa) → um Markdown por desafio. Os arquivos usam o prefixo `NN-` (mesmo id da linha do tempo `#N / 25`), amarrando nome do writeup à ordem real de execução e deixando visível a progressão de “anotações soltas” (#1–#2) para template Objetivo/Ferramentas (#12+) e, depois, relatório de invasão com cadeia de ataque (#24–#25).
+Plataforma → contexto (lab de módulo vs sala completa) → um Markdown por desafio. Os arquivos usam o prefixo `NN-` (mesmo id da linha do tempo `#N / 27`), amarrando nome do writeup à ordem real de execução e deixando visível a progressão de “anotações soltas” (#1–#2) para template Objetivo/Ferramentas (#12+) e, depois, relatório de invasão com cadeia de ataque (#24–#27).
