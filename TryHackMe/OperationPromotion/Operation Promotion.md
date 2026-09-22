@@ -265,5 +265,5 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2026-09-22 13:45:
 
 > [!info] Lições Aprendidas
 > 1. Testar fazer derivações de palavras chaves que encontramos em servidores web para utilizar em brute forcing em usuários.
-> 2. Não fiz reverse shell na rota do ping pois estava dando erro , achei que podia ser filtragem de tráfego de saída pelo firewall para portas que não precisa de sudo , mas depois de terminar a sala olhei um writeup e a pessoa usou na rota ping $(busybox nc ... ) basicamente o erro foi de comando usar o comando , coloquei ; e o comando em seguida mas dava para injetar diretamente no ping com $().
+> 2. Não fiz reverse shell na rota do ping pois estava dando erro , achei que podia ser filtragem de tráfego de saída pelo firewall para portas que não precisa de sudo , mas depois de terminar a sala olhei um writeup e a pessoa usou na rota ping \$(busybox nc ... ) basicamente o erro foi de como usar o comando , coloquei ; e o comando em seguida mas dava para injetar diretamente no ping com $().
 
