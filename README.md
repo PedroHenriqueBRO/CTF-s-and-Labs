@@ -4,11 +4,11 @@
 [![Hack The Box](https://img.shields.io/badge/HackTheBox-Certified%20Junior%20Cybersecurity%20Analyst-brightgreen?style=flat-square&logo=hackthebox)](https://academy.hackthebox.com/)
 [![TryHackMe](https://img.shields.io/badge/TryHackMe-Pathways%20Completed-red?style=flat-square&logo=tryhackme)](https://tryhackme.com/)
 [![Study Time](https://img.shields.io/badge/Dedication-4h%2Fday-blueviolet?style=flat-square)]()
-[![Writeups](https://img.shields.io/badge/Writeups-27-orange?style=flat-square)]()
+[![Writeups](https://img.shields.io/badge/Writeups-36-orange?style=flat-square)]()
 
 Repositório de documentação prática da transição de **Software Developer** para **Cybersecurity / Offensive Security (Red Team)**.
 
-Cada pasta é um CTF ou lab resolvido e documentado — da enumeração à pós-exploração — com anotações, comandos e lições aprendidas. A ordem numerada abaixo (#1 → #27) reflete a sequência cronológica dos commits: serve para acompanhar a **evolução da documentação** e da **metodologia de pentest**, não só o conteúdo técnico.
+Cada pasta é um CTF ou lab resolvido e documentado — da enumeração à pós-exploração — com anotações, comandos e lições aprendidas. A ordem numerada abaixo (#1 → #36) reflete a sequência cronológica dos commits: serve para acompanhar a **evolução da documentação** e da **metodologia de pentest**, não só o conteúdo técnico.
 
 ---
 
@@ -37,27 +37,30 @@ Cada pasta é um CTF ou lab resolvido e documentado — da enumeração à pós-
 
 ### Web & Application Attacks
 * Dir/vhost enum com Gobuster/ffuf; leitura de `info.php` e headers inseguros.
-* **LFI → RCE** (wrappers `php://filter`, `file://`, Apache log poisoning + Burp User-Agent).
+* **LFI → RCE** (wrappers `php://filter`, `file://`, Apache/SSH log poisoning + Burp User-Agent).
 * File upload bypass (ex.: `arquivo.php .jpg`), RFI controlado via servidor local.
-* **SQLi** manual: UNION, auth bypass, boolean-blind e time-based (`SLEEP`).
+* **SQLi** manual: UNION, auth bypass, boolean-blind e time-based (`SLEEP`); dump e abuso de tabelas.
+* **SSRF** para rotas internas, port scan em localhost e recuperação de credenciais/admin APIs.
+* **JWT / MFA:** forgery de claims, reset de senha frágil e bypass de segundo fator.
+* **SSTI** em templates; mass assignment (`isAdmin`); XSS sem HttpOnly + CSRF contra bots admin.
 * WordPress: WPScan, temas indexáveis, webshell via `404.php`, Metasploit multi/handler.
 * LFD em APIs/configs, sessão frágil (MD5) e escalada de conta web (user → admin).
 
 ### Privilege Escalation & Pós-exploração
-* Linux: SUID, cronjobs, PATH hijacking, escrita em scripts de outros usuários, `sudo -u`, GTFOBins (`less`).
+* Linux: SUID, cronjobs, PATH hijacking, escrita em scripts de outros usuários, `sudo -u` / `sudo find`, GTFOBins (`less`), wildcard injection em `tar`.
 * Windows: Meterpreter, dump NTLM, exploração de serviços expostos (ex.: FortiLogger).
-* KeePass → `keepass2john` → John; reutilização de senhas entre serviços.
+* KeePass → `keepass2john` → John/Hashcat; reutilização de senhas entre serviços.
 * Cadeias multi-usuário (ex.: Jump: `recon → dev → monitor → ops → root`).
 
 ### Frameworks & tooling
 * Metasploit (exploits remotos/locais, sessions, Baron Samedit / sudo).
-* Impacket, Hydra (quando faz sentido), Hashcat, John, Burp Suite, CyberChef.
+* Impacket, Hydra (quando faz sentido), Hashcat, John, Burp Suite, CyberChef, ffuf, BloodHound.
 
 ---
 
 ## 📈 Evolução da jornada (ordem cronológica)
 
-Cada entrada é um writeup commitado. O número **#N / 27** é a posição na linha do tempo — útil para comparar como a escrita e o raciocínio de pentest mudaram do primeiro CTF ao mais recente.
+Cada entrada é um writeup commitado. O número **#N / 36** é a posição na linha do tempo — útil para comparar como a escrita e o raciocínio de pentest mudaram do primeiro CTF ao mais recente.
 
 | Fase | Writeups | Foco |
 |------|----------|------|
@@ -67,6 +70,8 @@ Cada entrada é um writeup commitado. O número **#N / 27** é a posição na li
 | Exploração & MSF | #19–#21 | WordPress + Metasploit (Linux/Windows) |
 | Web + Privesc documentados | #22–#25 | SQLi, LFD/API, relatório mais estruturado |
 | Active Directory | #26–#27 | Coerção NTLM, delegação Kerberos e RBCD |
+| Relatórios THM (cadeia completa) | #28–#32 | Portal → AD/DMZ → SSRF/cron → sudo |
+| AppSec avançado | #33–#36 | JWT/MFA, SSTI, SSRF+LFI, XSS+CSRF |
 
 ---
 
@@ -108,8 +113,17 @@ A organização separa a plataforma (**HackTheBox** vs **TryHackMe**) e, no THM,
     ├── Support/24-Support.md              # LFD / sessão / relatório estruturado
     ├── jump/25-Jump.md                    # privesc multi-usuário encadeado
     ├── Proxy/26-Proxy.md                  # AD / coerção NTLM / constrained delegation
-    └── Forward/27-Forward.md              # lateral / KeePass / RBCD
+    ├── Forward/27-Forward.md              # lateral / KeePass / RBCD
+    ├── Domino/28-Domino.md                # wordlist login / devops cron → root
+    ├── SilentMonitor/29-SilentMonitor.md  # SQLi / RCE / KeePass → root
+    ├── DeadDrop/30-DeadDrop.md            # AD / DMZ pivot / Domain Admin
+    ├── OperationPromotion/31-OperationPromotion.md  # RCE web / sudo find
+    ├── OperationColdStart/32-OperationColdStart.md  # SSRF / tar wildcard → root
+    ├── Hammer/33-Hammer.md                # reset frágil / JWT forgery / MFA
+    ├── Injectics/34-Injectics.md          # SQLi / SSTI → www-data
+    ├── Include/35-Include.md              # mass assignment / SSRF / LFI log poison
+    └── WhatsYourName/36-WhatsYourName.md  # XSS cookie theft / CSRF admin bot
 ```
 
 **Por que essa estrutura?**  
-Plataforma → contexto (lab de módulo vs sala completa) → um Markdown por desafio. Os arquivos usam o prefixo `NN-` (mesmo id da linha do tempo `#N / 27`), amarrando nome do writeup à ordem real de execução e deixando visível a progressão de “anotações soltas” (#1–#2) para template Objetivo/Ferramentas (#12+) e, depois, relatório de invasão com cadeia de ataque (#24–#27).
+Plataforma → contexto (lab de módulo vs sala completa) → um Markdown por desafio. Os arquivos usam o prefixo `NN-` (mesmo id da linha do tempo `#N / 36`), amarrando nome do writeup à ordem real de execução e deixando visível a progressão de “anotações soltas” (#1–#2) para template Objetivo/Ferramentas (#12+) e, depois, relatório de invasão com cadeia de ataque (#24–#36).
