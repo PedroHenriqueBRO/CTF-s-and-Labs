@@ -1,15 +1,12 @@
-# 🎯 Relatório de Invasão: Cap
-
-> [!abstract] Resumo 
-> **Cadeia de ataque completa**: Ao acessar o servidor web nos deparamos com uma rota que permite que recuperemos dados de outros usuários (IDOR), assim recuperamos um .pcap de um usuário chamado nathan que nesse .pcap expoe dados de user e senha dele do ftp , então reutilizamos essas credenciais para o ssh e conseguimos shell com sucesso. Ao ter shell como nathan pesquisamos os cap em binários que ele pode usar e nisso vemos que ele pode fazer setuid com python3.8 , assim criamos um shell como root com um comando python e assim terminamos de escalar privilégio e dominar a máquina.
+# 🎯 Relatório de Invasão:  Cohort
 
 ---
 
 ## 🛠️ Ferramentas & Scripts Utilizados
 - nmap
-- ftp
-- ffuf
-- wireshark
+- ffuf 
+- exploit.py 1 CVE-2026-39987
+- exploit.py 2 CVE-2026-4165
 ---
 
 ## 🔍 1. Reconhecimento & Mapeamento
@@ -19,22 +16,10 @@
 > [!example] Output do Nmap com -sC e -sV
 > 
 
-![[Pasted image 20261105103859.png]]
-
-![[Pasted image 20261105103953.png]]
-
+![[Pasted image 20261105181720.png]]
 
 > [!info] Análise do Reconhecimento
-> Vemos uma porta rodando um serviço ftp que podemos enumerar e explorar para ver se o user anonymous é permitido nele, possivelmente permitindo a gente acesso a arquivos que não deveríamos. Temos um ssh que pode nos gerar um shell caso achemos user e password de user de sistema. Além disso tem uma aplicação web rodando onde iremos enumerar e explorar por vulnerabilidades para ganhar acesso ao sistema , a usuários normais e admins.
-
-### FTP
-![[Pasted image 20261105104538.png]]
-Vemos que o usuário padrão anonymous não tem acesso com senha padrão, iremos por enquanto explorar a web e depois voltar para o ftp caso achemos algo de interessante.
-
-### Pcap com wireshark
-Após usarmos o IDOR para recuperar um .pcap de um outro usuário usamos o wireshark para visualizar os dados desse .pcap.
-![[Pasted image 20261105111241.png]]
-Aqui conseguimos visualizar o processo de login do usuário nathan no ftp , com user e senha expostos sem segurança. Com isso podemos logar ftp e tentar ver se no ssh ele reutilizou a mesma senha.
+> Vemos a presença de uma porta 22 aberta com ssh , permitindo que conectemos caso arranjemos credenciais. Além disso há dois servidores web , um sendo na porta 80(http) e outro na porta 443(https).
 
 ---
 
@@ -44,58 +29,70 @@ Aqui conseguimos visualizar o processo de login do usuário nathan no ftp , com 
 >
 
 
-![[Pasted image 20261105105616.png]]
-Vemos um nome de usuário sendo ele chamado Nathan que podemos usar para tentar fazer login no ftp.
+### Exploração manual
+![[Pasted image 20261105181945.png]]
+![[Pasted image 20261105181957.png]]
+Vemos que não há nada demais nessas telas e no page source .
 
-![[Pasted image 20261105111015.png]]
-Nessa tela temos dados referentes a scans feitos em nível de rede para capturar pacotes , com isso vemos a presença na url de um número depois de /data, essa tela tem um IDOR que foi testado onde colocando 0 podemos acessar um scan importante de uma outra pessoa.
-
+Assim comecei a explorar a funcionalidade de validação , vista acima ao clicar no botão Open Client Insights.
+![[Pasted image 20261105194358.png]]
+Essa funcionalidade eu comecei testando meu servidor usando python3 -m http.server e a requisição chegou , com isso pensei que poderia colocar um script mas o servidor alvo não executa , ele só mostra o conteúdo. Com isso pensei em enumerar internamente o servidor alvo. Com isso coloquei 127.0.0.1 mas como a própria pagina diz o loopback é proibido mas aí pensei que eles poderiam ter feito uma verificação ruim e assim coloquei 127.1 e deu certo. Assim enumerei as portas internas. Nisso achei a porta 8888 que retornava uma página de login.
+![[Pasted image 20261105194713.png]]
+Enumerando na porta 8888 não achei nada de interessante , assim comecei a enumerar diretamente no 127.1 mesmo e descobri a rota status.
+![[Pasted image 20261105194850.png]]
+Ela nos deu um novo vhost que ao acessar chegamos na rota de login da porta 8888.
+![[Pasted image 20261105194920.png]]
+Nessa tela vemos o title sendo marimo , assim fui buscar por cve e achei uma poc de uma cve . Essa cve é um pre auth RCE , assim com o código consegui um shell no alvo.
 
 ---
 
 ## ⚡ 3. Exploração & Acesso Inicial (Foothold)
 
 >[!failure] Vulnerabilidade encontrada
->**Título**: IDOR em url /data/{id}
->**Risk Rating**: CVSS 7.5 
->**Resumo**: Foi encontrado um IDOR na url /data/{id} que retornava uma tela que nos gerava um botão de download , na qual o arquivo baixado era um .pcap para scans feitos em nível de rede pelo usuário. Com isso o IDOR permitia que capturassemos .pcap de outros usuários.
->**Background(Contexto adicional)**: IDOR é uma vulnerabilidade que permite que acessemos dados de outras pessoas sem ter a permissão para isso , devido a falhas de verificação de autorização nesse recurso .
->**Impacto**: Podemos extrair os .pcap de todos os usuários na plataforma apenas mudando o id para certo valor.
->**Conselhos e Remediações**: Para esse recurso deve se verificar se o id do usuário que está solicitando certo recurso é o mesmo id de usuário que possui esse recurso, assim impedindo que outros usuários recuperem dados de outras pessoas.
+>**Título**: SSRF na rota https://cohort.htb/portal.html
+>**Risk Rating**: 8.6
+>**Resumo**: Um SSRF permitiu que coletemos dados internos , como portas abertas e nisso descobrirmos dados de dentro do servidor. Assim conseguimos descobrir uma aplicação rodando em um certo vhost descoberto em uma rota.
+>**Background(Contexto adicional)**: SSRF é uma vulnerabilidade que permite que forjemos uma requisição para que o servidor alvo busque dados internamente ou em serviços de terceiros e nos devolva esses dados.
+>**Impacto**: Podemos enumerar a infra do servidor alvo e pegar dados de arquivos confidenciais .
+>**Conselhos e Remediações**: A aplicação restringiu 127.0.0.1 mas não restringiu 0.0.0.0 e 127.1 , provavelmente existem mais jeito de acessar o loopback . Assim é preciso restringir mais especificamente para todas as variações dos dispositivos de rede interno ou fazer um whitelist impondo quais tipos de url's podem ser acessadas.
 >**Detalhes Técnicos e Evidências**:
-
-1. A baixo teremos um print de um recurso que é devidamente meu
-![[Pasted image 20261105112632.png]]
-2. Com isso vemos na url que possui um id de valor 4 , iremos mudar para 0 que é o valor de um .pcap que possui vários dados de outra pessoa.
-![[Pasted image 20261105112717.png]]
-3. Concluindo , vemos que podemos acessar dados de outros usuários somente trocando o id na url.
+1. Primeiramente acessamos a página que contém a função vulnerável.
+![[Pasted image 20261105203253.png]]
+2. No campo de url colocamos http://127.1:8888/.
+![[Pasted image 20261105203334.png]]
+3. Vemos o SSRF , visto que fizemos a aplicação buscar dados de uma interface interna do servidor e certa porta e nos entregar.
 
 >[!failure] Vulnerabilidade encontrada
->**Título**: Binário setado com cap de setuid para usuário nathan
->**Risk Rating**: CVSS 7.8
->**Resumo**: Foi setado permissão para o usuário nathan para executar o binário do python3.8 com setuid , permitindo a criação de um shell como root.
->**Background(Contexto adicional)**: Cap são capacidades que podemos setar em binários para dar permissões a mais a um usuário a invés de setar permissões de sudo , assim limitando privilégio a certo binário.
->**Impacto**: Após spawnar o shell como root podemos fazer toda e qualquer modificação no servidor e extrair dados de TODOS os usuários .
->**Conselhos e Remediações**: Rever a necessidade de colocar cap de setuid nesse binário e assim confirmar se realmente é necessário , caso não seja colocar então cap's menos privilegiadas .
+>**Título**: Marimo Pre-Auth RCE via Unauthenticated WebSocket Terminal (CVE-2026-39987)
+>**Risk Rating**: 9.8
+>**Resumo**: Podemos de forma não autenticada executar esse exploit desse CVE no vhost nb-1be3782a8afd3ad5.cohort.htb alvo , assim permitindo que possamos fazer RCE e ganhar reverse shell.
+>**Background(Contexto adicional)**: Essa CVE é sobre a vulnerabilidade que permite que de forma não autenticada estabeleçamos um web socket com o alvo e assim podemos executar códigos diretamente no servidor alvo.
+>**Impacto**: Podemos de maneira não autenticada ganhar um reverse shell como user marimo no servidor alvo e assim executar ações em seu nome , exfiltrar dados e escalarmos privilégios para root caso haja como.
+>**Conselhos e Remediações**: Essa CVE afeta uma versão antiga do marimo , assim deve-se atualizar o marimo para versões atuais para que o servidor esteja mais seguro e não permita a exploração dessa CVE.
 >**Detalhes Técnicos e Evidências**:
-1. Primeiro rodamos o comando de getcap.
-![[Pasted image 20261105113944.png]]
-2. Pegamos o script do gtfobins para python com setui para criar um shell como root e o executamos.
-![[Pasted image 20261105114028.png]]
-3. Pronto , agora temos acesso como root e podemos fazer qualquer ação no servidor.
+1. Simplesmente executamos o script dessa CVE. Os valores presentes nos args desse script não foram necessário pois reutilizei um outro comando que testei para um código que não estava funcionando.
+![[Pasted image 20261105204010.png]]
+2. Nisso não ganhamos shell ainda em si pois ao fechar o web socket esse shell fecha , mas vemos que o nohup é executado , assim precisamos só abrir um nc na porta que colocamos no exploit e rodar o exploit novamente.
+![[Pasted image 20261105204157.png]]
+Fazendo isso ganhamos shell como marimo.
 
----
-
-## 🔑 Tabela de Credenciais Capturadas
-
-| Serviço / Local | Usuário | Senha / Hash    | Origem do Achado |
-| :-------------- | :------ | :-------------- | :--------------- |
-| ftp             | nathan  | Buck3tH4TF0RM3! | .pcap            |
-| ssh             | nathan  | Buck3tH4TF0RM3! | .pcap            |
+>[!failure] Vulnerabilidade encontrada
+>**Título**: Pack2TheRoot no servidor alvo (CVE-2026-4165)
+>**Risk Rating**: 8.8
+>**Resumo**: Esse CVE se resume a um pacote linux chamado PackageKit que possui versões vulneráveis a esse CVE e uma delas estava presente no servidor alvo. Assim permitindo que viremos root ao executar o código desse CVE.
+>**Background(Contexto adicional)**: Pack2TheRoot é uma vulnerabilidade que afeta versões do PackageKit da `1.0.2` até a `1.3.4` em múltiplas distribuições Linux e nisso permite que usuários sem privilégio explorem race conditions para manipular operações de pacotes e obter acesso root ao sistema.
+>**Impacto**: Sendo root podemos fazer qualquer exfiltração de dados e exploração no servidor alvo.
+>**Conselhos e Remediações**: Esse pacote deve ser atualizado para versões mais recentes para que seja mitigado essa exploração de cve no servidor alvo.
+>**Detalhes Técnicos e Evidências**:
+1. Baixamos a poc em nosso kali e a transferimos para o servidor alvo , nisso é só preciso executar ela com python , havia o python3 no alvo então foi fácil.
+![[Pasted image 20261105204651.png]]
+2. Assim vemos que possuímos agora acesso root.
+![[Pasted image 20261105204722.png]]
 
 ---
 
 ## 📚 Considerações Técnicas & Cheat Sheet
 
 > [!info] Lições Aprendidas
-> 1. Ficar mais atento a toda url que contenha id's , pode ser que tenha um IDOR.
+> 1. 
+> 2. 
